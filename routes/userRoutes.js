@@ -11,15 +11,17 @@ router
   .route("/")
   .get(
     autheticateUser,
-    authorizePermissions("admin", "user"),
+    authorizePermissions("admin"),
     userController.getAllUsers
   );
 
-router.route("/showMe").get(userController.showCurrentUser);
+router.route("/showMe").get(autheticateUser, userController.showCurrentUser);
 
-router.route("/updateUser").post(userController.updateUser);
+router.route("/updateUser").patch(userController.updateUser);
 
-router.route("/updateUserPassword").post(userController.updateUserPassword);
+router
+  .route("/updateUserPassword")
+  .patch(autheticateUser, userController.updateUserPassword);
 
 router.route("/:id").get(autheticateUser, userController.getSingleUser);
 
