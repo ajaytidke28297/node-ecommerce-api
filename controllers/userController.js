@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const CustomAPIError = require("../errors");
 const { StatusCodes } = require("http-status-codes");
+const { createTokenUser, attachCookiesToResponse } = require("../utils");
 
 const getAllUsers = async (req, res) => {
   console.log(req.user);
@@ -23,8 +24,21 @@ const showCurrentUser = (req, res) => {
   res.status(StatusCodes.OK).json({ user: req.user });
 };
 
-const updateUser = (req, res) => {
-  res.send("Get update user");
+const updateUser = async (req, res) => {
+  const { email, name } = req.body;
+  if (!email || !name) {
+    throw new CustomAPIError.BadRequestError("Please provide all values");
+  }
+
+  const user = await User.findOneAndUpdate(
+    { _id: req.user.userId },
+    { email, name },
+    { new: true, runValidators: true }
+  );
+
+  const tokenUser = createTokenUser(user);
+  attachCookiesToResponse({ res, user: tokenUser });
+  res.status(StatusCodes.OK).json({ user: tokenUser });
 };
 
 const updateUserPassword = async (req, res) => {
